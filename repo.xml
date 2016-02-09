@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<meta xmlns="http://exist-db.org/xquery/repo">
+    <description>Server side interface for the Atom editor package</description>
+    <author>Wolfgang Meier</author>
+    <website/>
+    <status>alpha</status>
+    <license>GNU-LGPL</license>
+    <copyright>true</copyright>
+    <type>library</type>
+    <target>atom-editor</target>
+    <prepare>pre-install.xql</prepare>
+    <finish/>
+    <deployed>2016-01-21T19:30:46.403+01:00</deployed>
+</meta>
