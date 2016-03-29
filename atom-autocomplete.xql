@@ -1,6 +1,6 @@
 (:
  :  eXide - web-based XQuery IDE
- :  
+ :
  :  Copyright (C) 2011-13 Wolfgang Meier
  :
  :  This program is free software: you can redistribute it and/or modify
@@ -97,7 +97,8 @@ declare function local:cardinality($cardinality as xs:string) {
         default return ()
 };
 
-declare function local:imported-functions($prefix as xs:string?, $base as xs:string, $sources as xs:string*, $uris as xs:string*, $prefixes as xs:string*) {
+declare function local:imported-functions($prefix as xs:string?, $signature as xs:string?, $base as xs:string,
+    $sources as xs:string*, $uris as xs:string*, $prefixes as xs:string*) {
     for $uri at $i in $uris
     let $source := if (matches($sources[$i], "^(/|\w+:)")) then $sources[$i] else concat($base, "/", $sources[$i])
     return
@@ -105,43 +106,50 @@ declare function local:imported-functions($prefix as xs:string?, $base as xs:str
             let $mprefix := $prefixes[$i]
             let $module := inspect:inspect-module($source)
             return (
-                for $desc in $module/function
-                let $name := $desc/@name/string()
-                (: fix namespace prefix to match the one in the import :)
-                let $name := concat($mprefix, ":", substring-after($name, ":"))
-                let $signature := local:generate-signature($desc)
-                return
-                    if (empty($prefix) or starts-with($name, $prefix)) then
-                        map {
-                            "text": $signature,
-                            "name": $desc/@name || "#" || count($desc/argument),
-                            "snippet": local:create-template($desc),
-                            "type": "function",
-                            "description": $desc/description/string(),
-                            "path": $source
-                        }
-                    else
-                        (),
-                for $var in $module/variable
-                (: fix namespace prefix to match the one in the import :)
-                let $name := concat($mprefix, ":", substring-after($var/@name, ":"))
-                return
-                    if (empty($prefix) or starts-with($name, $prefix)) then
-                        map {
-                            "text": "$" || $name,
-                            "name": $name,
-                            "replacementPrefix": "$" || $prefix,
-                            "type": "variable",
-                            "path": $source
-                        }
-                    else
-                        ()
+                if (not(starts-with($prefix, "$"))) then
+                    for $desc in $module/function
+                    let $name := $desc/@name/string()
+                    let $arity := count($desc/argument)
+                    (: fix namespace prefix to match the one in the import :)
+                    let $name := concat($mprefix, ":", substring-after($name, ":"))
+                    return
+                        if (
+                            (empty($signature) or $signature = $name || "#" || $arity) and
+                            (empty($prefix) or starts-with($name, $prefix))
+                        ) then
+                            map {
+                                "text": local:generate-signature($desc),
+                                "name": $desc/@name || "#" || $arity,
+                                "snippet": local:create-template($desc),
+                                "type": "function",
+                                "description": $desc/description/string(),
+                                "path": $source
+                            }
+                        else
+                            ()
+                else
+                    let $prefix := substring-after($prefix, "$")
+                    for $var in $module/variable
+                    (: fix namespace prefix to match the one in the import :)
+                    let $name := concat($mprefix, ":", substring-after($var/@name, ":"))
+                    return
+                        if (empty($prefix) or starts-with($name, $prefix)) then
+                            map {
+                                "text": "$" || $name,
+                                "name": $name,
+                                "replacementPrefix": "$" || $prefix,
+                                "type": "variable",
+                                "path": $source
+                            }
+                        else
+                            ()
             )
         } catch * {
             ()
         }
 };
 
+let $signature := request:get-parameter("signature", ())
 let $prefix := request:get-parameter("prefix", ())
 let $uris := request:get-parameter("uri", ())
 let $sources := request:get-parameter("source", ())
@@ -150,5 +158,5 @@ let $base := request:get-parameter("base", ())
 return
     array {
         if ($prefix) then local:builtin-modules($prefix) else (),
-        local:imported-functions($prefix, $base, $sources, $uris, $prefixes)
+        local:imported-functions($prefix, $signature, $base, $sources, $uris, $prefixes)
     }
