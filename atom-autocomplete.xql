@@ -94,7 +94,7 @@ declare function local:imported-functions($prefix as xs:string?, $signature as x
                     return
                         if (
                             (empty($signature) or $signature = $name || "#" || $arity) and
-                            (empty($prefix) or starts-with($name, $prefix))
+                            (empty($prefix) or matches($name, "^" || $prefix || "|:" || $prefix))
                         ) then
                             map {
                                 "text": local:generate-signature($desc),
@@ -113,7 +113,7 @@ declare function local:imported-functions($prefix as xs:string?, $signature as x
                     (: fix namespace prefix to match the one in the import :)
                     let $name := concat($mprefix, ":", substring-after($var/@name, ":"))
                     return
-                        if (empty($prefix) or starts-with($name, $prefix)) then
+                        if (empty($prefix) or matches($name, "^" || $prefix || "|:" || $prefix)) then
                             map {
                                 "text": "$" || $name,
                                 "name": $name,
