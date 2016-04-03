@@ -26,6 +26,7 @@ declare function local:collection($root as xs:anyURI, $level as xs:int) {
             for $resource in xmldb:get-child-resources($root)
             let $path := $root || "/" || $resource
             let $mime := xmldb:get-mime-type($path)
+            order by $resource ascending
             return
                 map {
                     "label": $resource,
