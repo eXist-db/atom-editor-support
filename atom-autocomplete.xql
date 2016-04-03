@@ -31,40 +31,19 @@ declare function local:builtin-modules($prefix as xs:string) {
     let $desc := inspect:inspect-function($func)
     order by function-name($func)
     return
-        local:describe-function($desc)
+        local:describe-function($desc, $prefix)
 };
 
-declare function local:describe-function($desc) {
+declare function local:describe-function($desc, $prefix as xs:string) {
     let $signature := local:generate-signature($desc)
     return
         map {
             "text": $signature,
             "snippet": local:create-template($desc),
             "type": "function",
-            "description": $desc/description/string()
+            "description": $desc/description/string(),
+            "replacementPrefix": $prefix
         }
-};
-
-declare function local:generate-help($desc as element(function)) {
-    let $help :=
-        <div class="function-help">
-            <p>{$desc/description/node()}</p>
-            <dl>
-            {
-                for $arg in $desc/argument
-                return (
-                    <dt>${$arg/@var/string()} as {$arg/@type/string()}{local:cardinality($arg/@cardinality)}</dt>,
-                    <dd>{$arg/node()}</dd>
-                )
-            }
-            </dl>
-            <dl>
-                <dt>Returns: {$desc/returns/@type/string()}{local:cardinality($desc/returns/@cardinality)}</dt>
-                <dd>{$desc/returns/node()}</dd>
-            </dl>
-        </div>
-    return
-        util:serialize($help, "method=xml omit-xml-declaration=yes")
 };
 
 declare function local:generate-signature($func as element(function)) {
@@ -122,6 +101,7 @@ declare function local:imported-functions($prefix as xs:string?, $signature as x
                                 "name": $desc/@name || "#" || $arity,
                                 "snippet": local:create-template($desc),
                                 "type": "function",
+                                "replacementPrefix": $prefix,
                                 "description": $desc/description/string(),
                                 "path": $source
                             }
