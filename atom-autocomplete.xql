@@ -42,6 +42,7 @@ declare function local:describe-function($desc, $prefix as xs:string) {
             "snippet": local:create-template($desc),
             "type": "function",
             "description": $desc/description/string(),
+            "leftLabel": $desc/returns/@type || local:cardinality($desc/returns/@cardinality),
             "replacementPrefix": $prefix
         }
 };
@@ -99,6 +100,7 @@ declare function local:imported-functions($prefix as xs:string?, $signature as x
                             map {
                                 "text": local:generate-signature($desc),
                                 "name": $desc/@name || "#" || $arity,
+                                "leftLabel": $desc/returns/@type || local:cardinality($desc/returns/@cardinality),
                                 "snippet": local:create-template($desc),
                                 "type": "function",
                                 "replacementPrefix": $prefix,
