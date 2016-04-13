@@ -24,6 +24,7 @@ declare namespace json="http://json.org/";
 declare option exist:serialize "method=json media-type=application/json";
 
 declare function local:builtin-modules($prefix as xs:string) {
+    let $modulePrefix := if (contains($prefix, ":")) then substring-before($prefix, ":") else $prefix
     for $module in util:registered-modules()
     let $funcs := inspect:module-functions-by-uri(xs:anyURI($module))
     let $matches := for $func in $funcs where matches(function-name($func), concat("^(\w+:)?", $prefix)) return $func
@@ -79,11 +80,13 @@ declare function local:cardinality($cardinality as xs:string) {
 
 declare function local:imported-functions($prefix as xs:string?, $signature as xs:string?, $base as xs:string,
     $sources as xs:string*, $uris as xs:string*, $prefixes as xs:string*) {
-    for $uri at $i in $uris
+    let $modulePrefix := if (contains($prefix, ":")) then substring-before($prefix, ":") else $prefix
+    for $mprefix at $i in $prefixes
+    where matches($mprefix, "^" || $modulePrefix || ".*")
+    let $uri := $uris[$i]
     let $source := if (matches($sources[$i], "^(/|\w+:)")) then $sources[$i] else concat($base, "/", $sources[$i])
     return
         try {
-            let $mprefix := $prefixes[$i]
             let $module := inspect:inspect-module($source)
             return (
                 if (not(starts-with($prefix, "$"))) then
