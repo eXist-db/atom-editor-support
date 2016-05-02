@@ -80,7 +80,11 @@ declare function local:cardinality($cardinality as xs:string) {
 
 declare function local:imported-functions($prefix as xs:string?, $signature as xs:string?, $base as xs:string,
     $sources as xs:string*, $uris as xs:string*, $prefixes as xs:string*) {
-    let $modulePrefix := if (contains($prefix, ":")) then substring-before($prefix, ":") else $prefix
+    let $modulePrefix :=
+        if (empty($signature)) then
+            if (contains($prefix, ":")) then substring-before($prefix, ":") else $prefix
+        else
+            replace($signature, "^\$?([^:]+):.*$", "$1")
     for $mprefix at $i in $prefixes
     where matches($mprefix, "^" || $modulePrefix || ".*")
     let $uri := $uris[$i]
@@ -89,7 +93,7 @@ declare function local:imported-functions($prefix as xs:string?, $signature as x
         try {
             let $module := inspect:inspect-module($source)
             return (
-                if (not(starts-with($prefix, "$"))) then
+                if (not(starts-with($prefix, "$")) and not(starts-with($signature, "$"))) then
                     for $desc in $module/function
                     let $name := $desc/@name/string()
                     let $arity := count($desc/argument)
@@ -113,12 +117,16 @@ declare function local:imported-functions($prefix as xs:string?, $signature as x
                         else
                             ()
                 else
+                    let $signature := substring-after($signature, "$")
                     let $prefix := substring-after($prefix, "$")
                     for $var in $module/variable
                     (: fix namespace prefix to match the one in the import :)
                     let $name := concat($mprefix, ":", substring-after($var/@name, ":"))
                     return
-                        if (empty($prefix) or matches($name, "^" || $prefix || "|:" || $prefix)) then
+                        if (
+                            (empty($signature) or $signature = $name) and
+                            (empty($prefix) or matches($name, "^" || $prefix || "|:" || $prefix)) 
+                        ) then
                             map {
                                 "text": "$" || $name,
                                 "name": $name,
