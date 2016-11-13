@@ -1,5 +1,10 @@
 xquery version "3.0";
 
+declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+declare option output:method "xml";
+declare option output:media-type "application/xml";
+declare option output:omit-xml-declaration "no";
+
 let $path := xmldb:encode(request:get-parameter("path", ()))
 let $mime := xmldb:get-mime-type($path)
 let $isBinary := util:is-binary-doc($path)

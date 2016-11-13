@@ -12,7 +12,7 @@ declare variable $repo :=
 declare function local:installed() {
     array {
         for $pkg in repo:list()
-        let $expath := collection(repo:get-root())//expath:package[@name = $pkg]
+        let $expath := collection(repo:get-root())//expath:package[@name = $pkg][1]
         return
             map {
                 "name": $expath/@name/string(),
