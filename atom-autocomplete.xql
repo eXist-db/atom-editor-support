@@ -82,7 +82,7 @@ declare function local:imported-functions($prefix as xs:string?, $signature as x
     $sources as xs:string*, $uris as xs:string*, $prefixes as xs:string*) {
     let $modulePrefix :=
         if (empty($signature)) then
-            if (contains($prefix, ":")) then substring-before($prefix, ":") else $prefix
+            replace($prefix, "^\$?([^:]+):.*$", "$1")
         else
             replace($signature, "^\$?([^:]+):.*$", "$1")
     for $mprefix at $i in $prefixes
@@ -124,8 +124,8 @@ declare function local:imported-functions($prefix as xs:string?, $signature as x
                     let $name := concat($mprefix, ":", substring-after($var/@name, ":"))
                     return
                         if (
-                            (empty($signature) or $signature = $name) and
-                            (empty($prefix) or matches($name, "^" || $prefix || "|:" || $prefix)) 
+                            (not($signature) or $signature = $name) and
+                            (not($prefix) or matches($name, "^" || $prefix || "|:" || $prefix))
                         ) then
                             map {
                                 "text": "$" || $name,
