@@ -5,6 +5,8 @@ declare option output:method "xml";
 declare option output:media-type "application/xml";
 declare option output:omit-xml-declaration "no";
 
+declare option exist:serialize "expand-xincludes=no";
+
 let $path := xmldb:encode(request:get-parameter("path", ()))
 let $mime := xmldb:get-mime-type($path)
 let $isBinary := util:is-binary-doc($path)
