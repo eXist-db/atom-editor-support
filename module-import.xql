@@ -30,28 +30,33 @@ declare function local:get-module-info($script as xs:anyURI) {
             }
 };
 
-declare function local:scan-modules($pkgRoot as xs:string, $imports as xs:string*) {
+declare function local:scan-modules($pkgRoot as xs:string, $prefix as xs:string?, $imports as xs:string*) {
     dbutil:find-by-mimetype($pkgRoot, "application/xquery", function($script) {
         for $info in local:get-module-info($script)
         return
             if ($info?namespace = $imports) then
                 ()
-            else
+            else if (empty($prefix) or $info?prefix = $prefix) then
                 $info
+            else
+                ()
     })
 };
 
-declare function local:mapped-modules($imports as xs:string*) {
+declare function local:mapped-modules($prefix as xs:string?, $imports as xs:string*) {
     for $uri in (util:registered-modules(), util:mapped-modules())
     where not($uri = $imports)
     let $module := inspect:inspect-module-uri($uri)
     return
-        map {
-            "prefix": $module/@prefix,
-            "namespace": $module/@uri,
-            "source": $module/@location,
-            "ref": "global"
-        }
+        if (empty($prefix) or $module/@prefix = $prefix) then
+            map {
+                "prefix": $module/@prefix,
+                "namespace": $module/@uri,
+                "source": $module/@location,
+                "ref": "global"
+            }
+        else
+            ()
 };
 
 declare function local:sort($modules as map(*)*) {
@@ -63,13 +68,14 @@ declare function local:sort($modules as map(*)*) {
 
 
 let $path := request:get-parameter("path", "/db/apps/tei-publisher/modules/lib/ajax.xql")
+let $prefix := request:get-parameter("prefix", ())
 let $imported := request:get-parameter("uri", ())
 let $path := if (starts-with($path, "xmldb:exist://")) then substring-after($path, "xmldb:exist://") else $path
 let $pkgRoot := local:get-package-root($path)
 let $pkgRoot := if ($pkgRoot) then $pkgRoot else $path
 let $modules := (
-    local:sort(local:scan-modules($pkgRoot, $imported)),
-    local:sort(local:mapped-modules($imported))
+    local:sort(local:scan-modules($pkgRoot, $prefix, $imported)),
+    local:sort(local:mapped-modules($prefix, $imported))
 )
 return
     array {
