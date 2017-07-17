@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://expath.org/ns/pkg" name="http://exist-db.org/apps/atom-editor" abbrev="atom-editor" version="0.2.7" spec="1.0">
     <title>Server side support scripts for the Atom editor package</title>
+    <dependency processor="http://exist-db.org" semver-min="3.0.4"/>
     <dependency package="http://exist-db.org/apps/shared"/>
 </package>
