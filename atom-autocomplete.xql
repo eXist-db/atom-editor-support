@@ -60,7 +60,7 @@ declare function local:get-built-in-functions($q as xs:string) {
                     $all-modules[starts-with(@prefix, $supplied-module-namespace-prefix)]
                 else
                     $all-modules
-    let $functions := $modules/function[not(annotation/@name = "private")]
+    let $functions := $modules/function[not(annotation/@name = "private") and not(deprecated)]
     for $function in $functions
     let $function-name :=
         (: Functions in some modules contain the module namespace prefix in
