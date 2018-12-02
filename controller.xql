@@ -1,20 +1,45 @@
 xquery version "3.0";
-            
+
 declare variable $exist:path external;
 declare variable $exist:resource external;
 declare variable $exist:controller external;
 declare variable $exist:prefix external;
 declare variable $exist:root external;
 
-if ($exist:resource eq 'execute') then
+if (starts-with($exist:path, "/store/")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/store.xql">
+            <add-parameter name="action" value="store"/>
+            <add-parameter name="path" value="{substring-after($exist:path, '/store')}"/>
+        </forward>
+    </dispatch>
+else if (starts-with($exist:path, "/delete/")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/store.xql">
+            <add-parameter name="action" value="delete"/>
+            <add-parameter name="path" value="{substring-after($exist:path, '/delete')}"/>
+        </forward>
+    </dispatch>
+else if ($exist:resource eq 'run') then
+    let $query := request:get-parameter("q", ())
+    return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <!-- Query is executed by XQueryServlet -->
+            <forward servlet="XQueryServlet">
+                <set-header name="Cache-Control" value="no-cache"/>
+                <!-- Query is passed via the attribute 'xquery.source' -->
+                <set-attribute name="xquery.source" value="{$query}"/>
+            </forward>
+        </dispatch>
+else if ($exist:resource eq 'execute') then
     let $query := request:get-parameter("qu", ())
     let $base := request:get-parameter("base", ())
-    let $output := request:get-parameter("output", "xml")
+    let $output := request:get-parameter("output", ())
     let $startTime := util:system-time()
     return
         switch ($output)
-            case "adaptive" 
-            case "json" 
+            case "adaptive"
+            case "json"
             case "xml" return
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <!-- Query is executed by XQueryServlet -->
@@ -36,7 +61,7 @@ if ($exist:resource eq 'execute') then
                         <forward url="results.xql">
                            <clear-attribute name="xquery.source"/>
                            <clear-attribute name="xquery.attribute"/>
-                           <set-attribute name="elapsed" 
+                           <set-attribute name="elapsed"
                                value="{string(seconds-from-duration(util:system-time() - $startTime))}"/>
                         </forward>
         	        </view>
