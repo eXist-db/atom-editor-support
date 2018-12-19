@@ -10,5 +10,12 @@
     <target>atom-editor</target>
     <prepare>pre-install.xql</prepare>
     <finish/>
-    <deployed>2016-01-21T19:30:46.403+01:00</deployed>
+    <deployed/>
+    <changelog>
+        <change version="1.0.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Return results using adaptive serialization - <a href="https://github.com/eXist-db/atom-editor-support/pull/5">#5</a></li>
+            </ul>
+        </change>
+    </changelog>
 </meta>
