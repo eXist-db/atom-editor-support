@@ -16,7 +16,7 @@
  :  You should have received a copy of the GNU General Public License
  :  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  :)
-xquery version "3.0";
+xquery version "3.1";
 
 (:~
 	Post-processes query results for the sandbox application. The
@@ -29,7 +29,7 @@ xquery version "3.0";
 	items from the result set stored in the session (see controller).
 :)
 
-declare option exist:serialize "method=xml media-type=text/xml omit-xml-declaration=yes indent=yes";
+declare option exist:serialize "method=adaptive indent=yes";
 
 declare function local:elapsed-time() {
     let $startTime := request:get-attribute("start-time")
