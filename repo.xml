@@ -14,7 +14,9 @@
     <changelog>
         <change version="1.0.0">
             <ul xmlns="http://www.w3.org/1999/xhtml">
-                <li>Return results using adaptive serialization - <a href="https://github.com/eXist-db/atom-editor-support/pull/5">#5</a></li>
+                <li>New: Now requires eXist-db 4.0.0 or higher</li>
+                <li>New: Results are returned using adaptive serialization - <a href="https://github.com/eXist-db/atom-editor-support/pull/5">#5</a></li>
+                <li>New: Results are separated on new lines - <a href="https://github.com/eXist-db/atom-editor-support/pull/10">#10</a></li>
             </ul>
         </change>
     </changelog>
