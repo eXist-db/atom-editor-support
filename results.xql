@@ -1,6 +1,6 @@
 (:
  :  eXide - web-based XQuery IDE
- :  
+ :
  :  Copyright (C) 2011 Wolfgang Meier
  :
  :  This program is free software: you can redistribute it and/or modify
@@ -19,43 +19,45 @@
 xquery version "3.1";
 
 (:~
-	Post-processes query results for the sandbox application. The
-	controller first sends the user-supplied query to XQueryServlet
-	for evaluation. The result is then passed to this script, which
-	stores the result set into the HTTP session and returns the number
-	of hits and time elapsed.
+    Post-processes query results for the sandbox application. The
+    controller first sends the user-supplied query to XQueryServlet
+    for evaluation. The result is then passed to this script, which
+    stores the result set into the HTTP session and returns the number
+    of hits and time elapsed.
 
-	Subsequent requests from the sandbox application may retrieve single
-	items from the result set stored in the session (see controller).
+    Subsequent requests from the sandbox application may retrieve single
+    items from the result set stored in the session (see controller).
 :)
 
-declare option exist:serialize "method=adaptive indent=yes";
+declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+
+declare option output:method "text";
 
 declare function local:elapsed-time() {
     let $startTime := request:get-attribute("start-time")
     return
         if ($startTime) then
-        	let $current-time := current-time()
-        	let $hours :=  hours-from-duration($current-time - xs:time($startTime))
-        	let $minutes :=  minutes-from-duration($current-time - xs:time($startTime))
-        	let $seconds := seconds-from-duration($current-time - xs:time($startTime))
-        	return ($hours * 3600) + ($minutes * 60) + $seconds
+            let $current-time := current-time()
+            let $hours :=  hours-from-duration($current-time - xs:time($startTime))
+            let $minutes :=  minutes-from-duration($current-time - xs:time($startTime))
+            let $seconds := seconds-from-duration($current-time - xs:time($startTime))
+            return ($hours * 3600) + ($minutes * 60) + $seconds
         else 0
 };
 
-(: 	When a query has been executed, its results will be passed into
-	this script in the request attribute 'results'.
+(:  When a query has been executed, its results will be passed into
+    this script in the request attribute 'results'.
 :)
-let $input := request:get-data()
 let $results := request:get-attribute("results")
+let $output := request:get-parameter("output", ())
 let $count := xs:integer(request:get-parameter("count", ()))
+let $trimmed-results :=
+    if ($count) then
+        subsequence($results, 1, $count)
+    else
+        $results
 return (
     response:set-header("X-elapsed", local:elapsed-time()),
-	response:set-header("X-result-count", string(count($results))),
-    if (string-length($input) gt 0) then
-        $input
-	else if ($count) then
-		subsequence($results, 1, xs:int($count))
-	else
-		$results
+    response:set-header("X-result-count", string(count($results))),
+    serialize($trimmed-results, map { "method": $output, "indent": true(), "item-separator": "&#10;"})
 )
