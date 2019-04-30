@@ -18,8 +18,6 @@
  :)
 xquery version "3.0";
 
-import module namespace console="http://exist-db.org/xquery/console" at "java:org.exist.console.xquery.ConsoleModule";
-
 declare option exist:serialize "method=json media-type=text/javascript";
 
 declare function local:fix-permissions($collection as xs:string, $resource as xs:string) {
@@ -57,7 +55,6 @@ declare function local:store($path as xs:string) {
     let $collection := $split[1]
     let $resource := $split[2]
     let $mime := local:get-mime-type()
-    let $log := console:log("Uploading " || $path)
     let $data := request:get-data()
     let $data :=
         if($data instance of xs:base64Binary) then
