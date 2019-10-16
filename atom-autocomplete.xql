@@ -24,6 +24,33 @@ declare namespace xqdoc="http://www.xqdoc.org/1.0";
 declare option output:method "json";
 declare option output:media-type "application/json";
 
+declare function local:get-by-signature($signature as xs:string) {
+    let $name := substring-before($signature, '#')
+    let $arity := substring-after($signature, '#')
+    let $prefix := substring-before($signature, ':')
+    let $fn := 
+        try {
+            function-lookup(xs:QName(if ($prefix) then $name else 'fn:' || $name), xs:integer($arity))
+        } catch * {
+            ()
+        }
+    return
+        if (exists($fn)) then
+            let $desc := inspect:inspect-function($fn)
+            let $function-name :=
+                (: Functions in some modules contain the module namespace prefix in
+                : the name attribtue, e.g., @name="map:merge". :)
+                if (contains($desc/@name, ':')) then
+                    substring-after($desc/@name, ':')
+                (: Functions in others *do not*, e.g., math:pow > @name="pow" :)
+                else
+                    $desc/@name
+            return
+                local:describe-function($desc, $prefix, $function-name, true(), '')
+        else
+            ()
+};
+
 (: Search for functions matching the supplied query string.
  : Logic for different kinds of query strings:
  :   1. Module namespace prefix only (e.g., "kwic:", "fn:"): show all functions
@@ -145,6 +172,7 @@ declare function local:get-imported-functions($q as xs:string?, $signature as xs
                                 "type": "function",
                                 "replacementPrefix": $q,
                                 "description": $function/description/string(),
+                                "arguments": local:describe-arguments($function),
                                 "path": $imported-module-source-url
                             }
                         else
@@ -187,9 +215,22 @@ declare function local:describe-function($function as element(function), $module
             "snippet": $template,
             "type": "function",
             "description": $help,
+            "arguments": local:describe-arguments($function),
             "leftLabel": $leftLabel,
             "replacementPrefix": $q
         }
+};
+
+declare function local:describe-arguments($function as element(function)) {
+    array {
+        for $arg in $function/argument
+        return
+            map {
+                "name": $arg/@var,
+                "type": $arg/@type,
+                "description": $arg/string()
+            }
+    }
 };
 
 declare function local:generate-signature($function as element(function), $module-namespace-prefix as xs:string, $function-name as xs:string, $show-fn-prefix as xs:boolean?) {
@@ -248,5 +289,13 @@ let $imported-module-prefixes := request:get-parameter("mprefix", ())
 return
     array {
         if ($q) then local:get-built-in-functions($q) else (),
-        local:get-imported-functions($q, $signature, $base, $imported-module-source-urls, $imported-module-namespace-uris, $imported-module-prefixes)
+        if ($signature) then
+            let $desc := local:get-by-signature($signature)
+            return
+                if (exists($desc)) then
+                    $desc
+                else
+                    local:get-imported-functions($q, $signature, $base, $imported-module-source-urls, $imported-module-namespace-uris, $imported-module-prefixes)
+        else
+            local:get-imported-functions($q, $signature, $base, $imported-module-source-urls, $imported-module-namespace-uris, $imported-module-prefixes)
     }
