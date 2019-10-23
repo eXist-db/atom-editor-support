@@ -6,8 +6,7 @@ declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 declare option output:method "json";
 declare option output:media-type "application/json";
 
-declare variable $repo := 
-    "http://demo.exist-db.org/exist/apps/public-repo/modules/find.xql";
+declare variable $repo := "https://exist-db.org/exist/apps/public-repo/find";
 
 declare function local:installed() {
     array {
