@@ -125,9 +125,9 @@ declare function local:get-imported-functions($q as xs:string?, $signature as xs
     $imported-module-source-urls as xs:string*, $imported-module-namespace-uris as xs:string*, $imported-module-prefixes as xs:string*) {
     let $supplied-module-namespace-prefix :=
         if (empty($signature)) then
-            replace($q, "^\$?([^:]+):.*$", "$1")
+            replace($q, "^\$?([^:]+):?.*$", "$1")
         else
-            replace($signature, "^\$?([^:]+):.*$", "$1")
+            replace($signature, "^\$?([^:]+):?.*$", "$1")
     for $imported-module-prefix at $i in $imported-module-prefixes
     where matches($imported-module-prefix, "^" || $supplied-module-namespace-prefix)
     let $imported-module-namespace-uri := $imported-module-namespace-uris[$i]
@@ -194,7 +194,8 @@ declare function local:get-imported-functions($q as xs:string?, $signature as xs
                                 "name": $variable-name,
                                 "replacementPrefix": "$" || $q,
                                 "type": "variable",
-                                "path": $imported-module-source-url
+                                "path": $imported-module-source-url,
+                                "snippet": $variable-name
                             }
                         else
                             ()
