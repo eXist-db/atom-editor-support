@@ -6,7 +6,18 @@ declare variable $exist:controller external;
 declare variable $exist:prefix external;
 declare variable $exist:root external;
 
-if (starts-with($exist:path, "/store/")) then
+if ($exist:path eq '/api.html') then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/api.html"/>
+    </dispatch>
+
+else if (starts-with($exist:path, "/api/")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="{$exist:controller}/api.xql">
+                <set-header name="Cache-Control" value="no-cache"/>
+            </forward>
+        </dispatch>
+else if (starts-with($exist:path, "/store/")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/store.xql">
             <add-parameter name="action" value="store"/>
