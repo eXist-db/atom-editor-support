@@ -12,6 +12,15 @@
     <finish/>
     <deployed/>
     <changelog>
+        <change version="1.1.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>New: Add endpoint for running xqsuite tests - <a href="https://github.com/eXist-db/atom-editor-support/commit/3ea0d7349b602437c0fb050d46dad2fc0920e045">3ea0d7</a></li>
+                <li>Fixed: Autocompletion <a href="https://github.com/eXist-db/atom-editor-support/commit/8a658e2fa45a56790f1dbc6824c6ef3dc1edfba4">8a658e</a></li>
+                <li>Fixed: public-repo find endpoint <a href="https://github.com/eXist-db/atom-editor-support/pull/13">#13</a></li>
+                <li>New: Support retrieving documentation for built-in eXist functions by passing in a signature - <a href="https://github.com/eXist-db/atom-editor-support/commit/d8e0ed42e18e30a68673d2ddab688f5017c4b36a">d8e0ed</a></li>
+                <li>Fixed: Drop use of console module, which was not really needed. - <a href="https://github.com/eXist-db/atom-editor-support/commit/a292430630cbd5135e52203e7591bb28b04c18b7">a29243</a></li>
+            </ul>
+        </change>
         <change version="1.0.0">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>New: Now requires eXist-db 4.0.0 or higher</li>
